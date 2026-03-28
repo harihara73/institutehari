@@ -166,7 +166,8 @@ app.get('/api/search/:certNumber', async (req, res) => {
                     id: 0,
                     cert_number: file.name.split('-')[0] || file.name, // Extract cert number if possible
                     student_name: file.name.includes('-') ? file.name.split('-')[1].replace('.pdf', '') : 'Verified Student',
-                    download_url: `https://drive.google.com/uc?export=download&id=${file.id}`
+                    download_url: `https://drive.google.com/uc?export=download&id=${file.id}`,
+                    preview_url: `https://drive.google.com/file/d/${file.id}/preview`
                 }));
                 
                 // Add unique drive results not already found in DB

@@ -61,7 +61,6 @@ async function findFilesByName(fileName) {
     const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
     
     // Use 'contains' for partial matching (useful for finding 'old files' or searches)
-    // Escape single quotes in the fileName for query safety
     const escapedFileName = fileName.replace(/'/g, "\\'");
     const q = `'${folderId}' in parents and name contains '${escapedFileName}' and trashed = false`;
     
@@ -74,7 +73,25 @@ async function findFilesByName(fileName) {
     return response.data.files; // Return all matching files
 }
 
+async function findFileByExactName(fileName) {
+    const drive = await getDriveService();
+    const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
+    
+    // Exact name match for duplicate checking
+    const escapedFileName = fileName.replace(/'/g, "\\'");
+    const q = `'${folderId}' in parents and name = '${escapedFileName}' and trashed = false`;
+    
+    const response = await drive.files.list({
+        q: q,
+        fields: 'files(id, name)',
+        spaces: 'drive',
+    });
+
+    return response.data.files[0] || null; // Return first match only
+}
+
 module.exports = {
     uploadFile,
     findFilesByName,
+    findFileByExactName,
 };
