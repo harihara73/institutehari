@@ -181,29 +181,32 @@
                             <input type="text" id="certNumber" name="cert_number" class="form-control" required placeholder="e.g. VCI 68 2025">
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="form-group mb-4">
                             <label for="studentName">Student Name (Optional)</label>
                             <input type="text" id="studentName" name="student_name" class="form-control" placeholder="John Doe">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group mb-4">
+                            <label for="courseName">Course Name (Optional)</label>
+                            <input type="text" id="courseName" name="course" class="form-control" placeholder="e.g. PGDCA, Python">
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group mb-4">
                     <label for="certificatePdf">Attach Official PDF *</label>
-                    <div class="file-upload-wrapper">
-                        <input type="file" id="certificatePdf" name="certificate" class="form-control" accept=".pdf" required>
-                        <button type="button" id="previewBtn" class="secondary-btn" disabled>Preview PDF</button>
-                    </div>
+                    <input type="file" id="certificatePdf" name="certificate" class="form-control" accept=".pdf" required>
                 </div>
 
-                <!-- PDF Preview -->
+                <!-- Admin Live Preview (Automatic) -->
                 <div id="previewContainer" class="preview-box hidden">
                     <div class="preview-header">
-                        <span><i class="fas fa-file-pdf me-2"></i>Document Preview</span>
+                        <span><i class="fas fa-file-pdf me-2"></i>Selected File Preview</span>
                         <button type="button" id="closePreview" class="close-btn">&times;</button>
                     </div>
-                    <iframe id="pdfPreviewFrame" src="" width="100%" height="450px" style="border:none;"></iframe>
+                    <iframe id="pdfPreviewFrame" width="100%" height="450px" style="border:none;"></iframe>
                 </div>
 
                 <button type="submit" class="btn btn-primary w-100 rounded-pill py-3 fw-bold mt-4 shadow">
@@ -236,13 +239,39 @@
     <script>
         // Administration Logic
         document.addEventListener('DOMContentLoaded', () => {
-            const API_URL = 'https://institutehari.onrender.com';
+            // Dynamic API URL detection
+            const API_URL = window.location.origin.includes('localhost') 
+                ? 'http://localhost:3000' 
+                : 'https://institutehari.onrender.com';
 
             // Logout
             document.getElementById('logoutBtn').addEventListener('click', (e) => {
                 e.preventDefault();
                 window.location.href = `${API_URL}/logout`;
             });
+
+            // Admin Live Preview: Show file immediately after selection
+            const fileInput = document.getElementById('certificatePdf');
+            const previewContainer = document.getElementById('previewContainer');
+            const previewFrame = document.getElementById('pdfPreviewFrame');
+            const closePreview = document.getElementById('closePreview');
+
+            if (fileInput) {
+                fileInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file && file.type === 'application/pdf') {
+                        const fileUrl = URL.createObjectURL(file);
+                        previewFrame.src = fileUrl;
+                        previewContainer.classList.remove('hidden');
+                    } else {
+                        previewContainer.classList.add('hidden');
+                    }
+                });
+            }
+
+            if (closePreview) {
+                closePreview.addEventListener('click', () => previewContainer.classList.add('hidden'));
+            }
 
             // Force logout on page refresh (user security requirement)
             const navEntries = performance.getEntriesByType('navigation');
@@ -260,8 +289,6 @@
                     e.preventDefault();
 
                     const certNumber = document.getElementById('certNumber').value.trim();
-                    const fileInput = document.getElementById('certificatePdf');
-
                     if (!certNumber) {
                         uploadResult.innerHTML = '<div class="alert alert-warning">Certificate number is required.</div>';
                         return;
@@ -273,6 +300,11 @@
                     }
 
                     const formData = new FormData(uploadForm);
+                    
+                    const submitBtn = uploadForm.querySelector('button[type="submit"]');
+                    const originalBtnText = submitBtn.innerHTML;
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Uploading...';
 
                     try {
                         const response = await fetch(`${API_URL}/admin/upload`, {
@@ -284,20 +316,21 @@
                         const payload = await response.json();
 
                         if (!response.ok) {
-                            let message = payload.error || 'Upload failed. Please try again.';
-                            if (message.toLowerCase().includes('unique') || message.toLowerCase().includes('already exists')) {
-                                message = 'File already exists with that certificate number. Please use a different certificate number.';
-                            }
-                            uploadResult.innerHTML = `<div class="alert alert-danger">${message}</div>`;
+                            let message = payload.error || 'Upload failed.';
+                            uploadResult.innerHTML = `<div class="alert alert-danger">✖ ${message}</div>`;
                             return;
                         }
 
-                        uploadResult.innerHTML = `<div class="alert alert-success">${payload.message || 'Certificate uploaded successfully.'}</div>`;
+                        uploadResult.innerHTML = `<div class="alert alert-success">✔ uploaded successful</div>`;
                         uploadForm.reset();
+                        previewContainer.classList.add('hidden');
 
                     } catch (err) {
                         console.error('Upload error:', err);
-                        uploadResult.innerHTML = '<div class="alert alert-danger">Upload failed. Please check your network and try again.</div>';
+                        uploadResult.innerHTML = '<div class="alert alert-danger">✖ Upload failed. Please check network.</div>';
+                    } finally {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnText;
                     }
                 });
             }
