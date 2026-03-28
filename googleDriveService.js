@@ -56,14 +56,14 @@ async function uploadFile(fileBuffer, fileName, mimeType) {
     return response.data;
 }
 
-async function findFileByName(fileName) {
+async function findFilesByName(fileName) {
     const drive = await getDriveService();
     const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
     
-    // Exact name match to prevent partial hits
+    // Use 'contains' for partial matching (useful for finding 'old files' or searches)
     // Escape single quotes in the fileName for query safety
     const escapedFileName = fileName.replace(/'/g, "\\'");
-    const q = `'${folderId}' in parents and name = '${escapedFileName}' and trashed = false`;
+    const q = `'${folderId}' in parents and name contains '${escapedFileName}' and trashed = false`;
     
     const response = await drive.files.list({
         q: q,
@@ -71,10 +71,10 @@ async function findFileByName(fileName) {
         spaces: 'drive',
     });
 
-    return response.data.files[0] || null; // Return the first match
+    return response.data.files; // Return all matching files
 }
 
 module.exports = {
     uploadFile,
-    findFileByName,
+    findFilesByName,
 };

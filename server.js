@@ -129,35 +129,47 @@ app.post('/admin/upload', adminAuth, upload.single('certificate'), async (req, r
 app.get('/api/search/:certNumber', async (req, res) => {
     const certNumber = req.params.certNumber;
 
-    db.get(`SELECT * FROM certificates WHERE LOWER(cert_number) = LOWER(?) OR LOWER(course) = LOWER(?)`, [certNumber, certNumber], async (err, row) => {
+    db.all(`SELECT * FROM certificates WHERE LOWER(cert_number) = LOWER(?) OR LOWER(course) = LOWER(?)`, [certNumber, certNumber], async (err, rows) => {
         if (err) {
             console.error('DB Error:', err.message);
         }
 
-        if (row) {
+        let results = [];
+
+        if (rows && rows.length > 0) {
             // Found in DB (by cert number or course)
-            return res.json({
+            results = rows.map(row => ({
                 id: row.id,
                 cert_number: row.cert_number,
                 student_name: row.student_name,
                 course: row.course,
                 download_url: `https://drive.google.com/uc?export=download&id=${row.google_drive_id}`
-            });
+            }));
         }
 
-        // FALLBACK: If not in DB (lost on Render), search Google Drive directly by Filename
+        // FALLBACK/SUPPLEMENT: Search Google Drive directly by partial name/filename
         try {
-            const driveFile = await driveService.findFileByName(certNumber);
-            if (driveFile) {
-                return res.json({
+            const driveFiles = await driveService.findFilesByName(certNumber);
+            if (driveFiles && driveFiles.length > 0) {
+                const driveResults = driveFiles.map(file => ({
                     id: 0,
-                    cert_number: certNumber,
-                    student_name: 'Verified Student',
-                    download_url: `https://drive.google.com/uc?export=download&id=${driveFile.id}`
+                    cert_number: file.name.split('-')[0] || file.name, // Extract cert number if possible
+                    student_name: file.name.includes('-') ? file.name.split('-')[1].replace('.pdf', '') : 'Verified Student',
+                    download_url: `https://drive.google.com/uc?export=download&id=${file.id}`
+                }));
+                
+                // Add unique drive results not already found in DB
+                driveResults.forEach(dr => {
+                    const exists = results.find(r => r.download_url.includes(dr.download_url.split('id=')[1]));
+                    if (!exists) results.push(dr);
                 });
             }
         } catch (driveErr) {
             console.error('Drive Search Error:', driveErr);
+        }
+
+        if (results.length > 0) {
+            return res.json(results);
         }
 
         res.status(404).json({ error: 'Certificate not found. Please check your number.' });
