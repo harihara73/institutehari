@@ -1,5 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
     
+    // ======== Configuration ========
+    // IMPORTANT: Swap this with your Render.com URL after you deploy the backend!
+    // Example: const API_URL = 'https://your-app.onrender.com';
+    const API_URL = window.location.origin === 'http://localhost:3000' ? '' : 'https://your-app-on-render.onrender.com';
+    
+    
     // ======== Admin Upload Form ========
     const uploadForm = document.getElementById('uploadForm');
     if (uploadForm) {
@@ -22,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('certificate', fileInput);
 
             try {
-                const response = await fetch('/admin/upload', {
+                const response = await fetch(`${API_URL}/admin/upload`, {
                     method: 'POST',
                     body: formData
                 });
@@ -53,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!certNumber) return;
 
             try {
-                const response = await fetch(`/api/search/${encodeURIComponent(certNumber)}`);
+                const response = await fetch(`${API_URL}/api/search/${encodeURIComponent(certNumber)}`);
                 const data = await response.json();
 
                 if (!response.ok) {

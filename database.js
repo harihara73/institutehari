@@ -13,7 +13,8 @@ const db = new sqlite3.Database(dbPath, (err) => {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             cert_number TEXT UNIQUE NOT NULL,
             student_name TEXT,
-            file_path TEXT NOT NULL
+            file_path TEXT,
+            google_drive_id TEXT
         )`, (err) => {
             if (err) {
                 console.error('Error creating table', err.message);
