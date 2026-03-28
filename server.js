@@ -89,8 +89,8 @@ app.post('/admin/upload', adminAuth, upload.single('certificate'), async (req, r
     }
 
     try {
-        // [DUPLICATE CHECK] Check if a file with the same name already exists on Google Drive
-        const existingFile = await driveService.findFileByName(req.file.originalname);
+        // [DUPLICATE CHECK] Check if a file with the same EXACT name already exists on Google Drive
+        const existingFile = await driveService.findFileByExactName(req.file.originalname);
         if (existingFile) {
             return res.status(400).json({ error: 'PDF already exists' });
         }
