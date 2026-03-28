@@ -1,7 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // ======== Configuration ========
-    const API_URL = 'https://institutehari.onrender.com';
+    // Use the current origin for API calls if running on the same server, 
+    // fallback to production URL if needed.
+    const API_URL = window.location.origin.includes('localhost') 
+        ? 'http://localhost:3000' 
+        : 'https://institutehari.onrender.com';
 
     // ======== Backend Health Status ========
     const backendStatus = document.getElementById('backendStatus');
@@ -152,6 +156,52 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
         resultBox.classList.remove('hidden');
+    }
+
+    // ======== Admin Upload Form ========
+    const uploadForm = document.getElementById('uploadForm');
+    const uploadResult = document.getElementById('uploadResult');
+
+    if (uploadForm) {
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = uploadForm.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.textContent;
+            
+            // Show Loading State
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Uploading to Secure Drive...';
+            uploadResult.innerHTML = '';
+            uploadResult.className = 'result-message';
+
+            try {
+                const formData = new FormData(uploadForm);
+                const response = await fetch(`${API_URL}/admin/upload`, {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Upload failed');
+                }
+
+                uploadResult.textContent = '✔ ' + data.message;
+                uploadResult.classList.add('success');
+                uploadForm.reset();
+
+            } catch (err) {
+                console.error('Upload Error:', err);
+                uploadResult.textContent = '✖ ' + err.message;
+                uploadResult.classList.add('error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
+            }
+        });
     }
 
 });
