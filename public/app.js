@@ -66,64 +66,81 @@ document.addEventListener('DOMContentLoaded', () => {
             loadingSpinner.classList.add('hidden');
 
             try {
-                const data = await response.json();
+                const results = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(data.error || 'Certificate not found.');
+                    throw new Error(results.error || 'Certificate not found.');
                 }
 
-                // Render success details using the new Premium Layout
-                let driveId = '';
-                if (data.download_url.includes('id=')) {
-                    driveId = data.download_url.split('id=')[1];
+                // If results is not an array, wrap it (though server is now updated to return array)
+                const dataArray = Array.isArray(results) ? results : [results];
+
+                // Clear previous results
+                resultBox.innerHTML = '';
+
+                if (dataArray.length > 1) {
+                    const countHeader = document.createElement('div');
+                    countHeader.className = 'alert alert-info text-center mb-4 rounded-pill shadow-sm';
+                    countHeader.innerHTML = `<i class="fas fa-search me-2"></i> Found <strong>${dataArray.length}</strong> matching certificates`;
+                    resultBox.appendChild(countHeader);
                 }
 
-                const previewUrl = driveId ? `https://drive.google.com/file/d/${driveId}/preview` : data.download_url;
-                
-                // Construct Success HTML
-                resultBox.innerHTML = `
-                    <div class="result-card">
-                        <div class="success-badge"><i class="fas fa-check-circle"></i> VERIFIED · VALID CERTIFICATE</div>
-                        
-                        <div class="student-profile">
-                            <div class="photo-area text-center" style="min-width: 160px;">
-                                <img class="student-photo" src="https://ui-avatars.com/api/?background=1f7b8c&color=fff&size=150&name=${encodeURIComponent(data.student_name || 'Verified')}" alt="Student Photo">
-                            </div>
+                dataArray.forEach(data => {
+                    // Render success details using the Premium Layout
+                    let driveId = '';
+                    if (data.download_url.includes('id=')) {
+                        driveId = data.download_url.split('id=')[1];
+                    }
+
+                    const previewUrl = driveId ? `https://drive.google.com/file/d/${driveId}/preview` : data.download_url;
+                    
+                    const card = document.createElement('div');
+                    card.className = 'mb-5'; // Space between multiple results
+                    card.innerHTML = `
+                        <div class="result-card">
+                            <div class="success-badge"><i class="fas fa-check-circle"></i> VERIFIED · VALID CERTIFICATE</div>
                             
-                            <div class="details-grid">
-                                <div class="detail-item">
-                                    <div class="detail-label"><i class="fas fa-user-graduate me-1"></i> Full Name</div>
-                                    <div class="detail-value">${data.student_name || 'Verified Student'}</div>
+                            <div class="student-profile">
+                                <div class="photo-area text-center" style="min-width: 160px;">
+                                    <img class="student-photo" src="https://ui-avatars.com/api/?background=1f7b8c&color=fff&size=150&name=${encodeURIComponent(data.student_name || 'Verified')}" alt="Student Photo">
                                 </div>
-                                <div class="detail-item">
-                                    <div class="detail-label"><i class="fas fa-id-card me-1"></i> Certificate ID</div>
-                                    <div class="detail-value">${data.cert_number}</div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label"><i class="fas fa-calendar-check me-1"></i> Status</div>
-                                    <div class="detail-value text-success">Active & Verified</div>
+                                
+                                <div class="details-grid">
+                                    <div class="detail-item">
+                                        <div class="detail-label"><i class="fas fa-user-graduate me-1"></i> Full Name</div>
+                                        <div class="detail-value">${data.student_name || 'Verified Student'}</div>
+                                    </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label"><i class="fas fa-id-card me-1"></i> Certificate ID</div>
+                                        <div class="detail-value">${data.cert_number}</div>
+                                    </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label"><i class="fas fa-calendar-check me-1"></i> Status</div>
+                                        <div class="detail-value text-success">Active & Verified</div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="action-buttons d-flex flex-wrap gap-2 mb-4">
-                            <a href="${data.download_url}" class="btn btn-primary rounded-pill px-4">
-                               <i class="fas fa-download me-2"></i>Download PDF
-                            </a>
-                            <button onclick="window.open('${previewUrl}', '_blank')" class="btn btn-secondary rounded-pill px-4">
-                               <i class="fas fa-eye me-2"></i>Preview
-                            </button>
-                        </div>
-
-                        <!-- PDF Preview Frame -->
-                        <div class="preview-box mt-4">
-                            <div class="preview-header">
-                                <span><i class="fas fa-file-pdf me-2"></i>Official Document Preview</span>
+                            <div class="action-buttons d-flex flex-wrap gap-2 mb-4">
+                                <a href="${data.download_url}" class="btn btn-primary rounded-pill px-4">
+                                   <i class="fas fa-download me-2"></i>Download PDF
+                                </a>
+                                <button onclick="window.open('${previewUrl}', '_blank')" class="btn btn-secondary rounded-pill px-4">
+                                   <i class="fas fa-eye me-2"></i>Preview
+                                </button>
                             </div>
-                            <iframe src="${previewUrl}" width="100%" height="500px" style="border:none;"></iframe>
+
+                            <!-- PDF Preview Frame -->
+                            <div class="preview-box mt-4">
+                                <div class="preview-header">
+                                    <span><i class="fas fa-file-pdf me-2"></i>Official Document Preview</span>
+                                </div>
+                                <iframe src="${previewUrl}" width="100%" height="500px" style="border:none;"></iframe>
+                            </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                    resultBox.appendChild(card);
+                });
 
                 resultBox.classList.remove('hidden');
 
