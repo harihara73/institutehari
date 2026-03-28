@@ -18,6 +18,13 @@ const db = new sqlite3.Database(dbPath, (err) => {
         )`, (err) => {
             if (err) {
                 console.error('Error creating table', err.message);
+            } else {
+                // Migration: Add google_drive_id if it doesn't exist (handles existing databases)
+                db.run(`ALTER TABLE certificates ADD COLUMN google_drive_id TEXT`, (err) => {
+                    if (err && !err.message.includes('duplicate column name')) {
+                        console.error('Error migrating table', err.message);
+                    }
+                });
             }
         });
     }
