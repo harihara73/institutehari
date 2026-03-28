@@ -241,4 +241,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // ======== Admin Logout & Session Security ========
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.location.href = `${API_URL}/logout`;
+        });
+    }
+
+    // Force logout on page refresh (user security requirement)
+    const navEntries = performance.getEntriesByType('navigation');
+    if (navEntries.length > 0 && navEntries[0].type === 'reload') {
+        document.cookie = 'adminAuth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        window.location.href = '/login';
+    }
+
 });
