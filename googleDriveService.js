@@ -56,6 +56,24 @@ async function uploadFile(fileBuffer, fileName, mimeType) {
     return response.data;
 }
 
+async function findFileByName(fileName) {
+    const drive = await getDriveService();
+    const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
+    
+    // Search for a file with the given name (case insensitive or partial match can be adjusted)
+    // We search for files that start with the cert number
+    const q = `'${folderId}' in parents and name contains '${fileName}' and trashed = false`;
+    
+    const response = await drive.files.list({
+        q: q,
+        fields: 'files(id, name, webViewLink)',
+        spaces: 'drive',
+    });
+
+    return response.data.files[0] || null; // Return the first match
+}
+
 module.exports = {
     uploadFile,
+    findFileByName,
 };

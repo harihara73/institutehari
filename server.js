@@ -119,22 +119,40 @@ app.post('/admin/upload', adminAuth, upload.single('certificate'), async (req, r
 });
 
 // Public Route: Search for a certificate
-app.get('/api/search/:certNumber', (req, res) => {
+app.get('/api/search/:certNumber', async (req, res) => {
     const certNumber = req.params.certNumber;
 
-    db.get(`SELECT * FROM certificates WHERE cert_number = ?`, [certNumber], (err, row) => {
+    db.get(`SELECT * FROM certificates WHERE cert_number = ?`, [certNumber], async (err, row) => {
         if (err) {
-            return res.status(500).json({ error: err.message });
+            console.error('DB Error:', err.message);
         }
-        if (!row) {
-            return res.status(404).json({ error: 'Certificate not found. Please check your number.' });
+
+        if (row) {
+            // Found in DB
+            return res.json({
+                id: row.id,
+                cert_number: row.cert_number,
+                student_name: row.student_name,
+                download_url: `https://drive.google.com/uc?export=download&id=${row.google_drive_id}`
+            });
         }
-        res.json({
-            id: row.id,
-            cert_number: row.cert_number,
-            student_name: row.student_name,
-            download_url: `https://drive.google.com/uc?export=download&id=${row.google_drive_id}`
-        });
+
+        // FALLBACK: If not in DB (lost on Render), search Google Drive directly by Filename
+        try {
+            const driveFile = await driveService.findFileByName(certNumber);
+            if (driveFile) {
+                return res.json({
+                    id: 0,
+                    cert_number: certNumber,
+                    student_name: 'Verified Student',
+                    download_url: `https://drive.google.com/uc?export=download&id=${driveFile.id}`
+                });
+            }
+        } catch (driveErr) {
+            console.error('Drive Search Error:', driveErr);
+        }
+
+        res.status(404).json({ error: 'Certificate not found. Please check your number.' });
     });
 });
 
