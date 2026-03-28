@@ -82,22 +82,29 @@ app.get('/admin', adminAuth, (req, res) => {
 
 // Admin Route: Upload a certificate
 app.post('/admin/upload', adminAuth, upload.single('certificate'), async (req, res) => {
-    const { cert_number, student_name } = req.body;
+    const { cert_number, student_name, course } = req.body;
 
     if (!req.file || !cert_number) {
         return res.status(400).json({ error: 'Certificate file and number are required.' });
     }
 
     try {
+        // [DUPLICATE CHECK] Check if a file with the same name already exists on Google Drive
+        const existingFile = await driveService.findFileByName(req.file.originalname);
+        if (existingFile) {
+            return res.status(400).json({ error: 'PDF already exists' });
+        }
+
+        // [UPLOAD] Upload the file using its original name
         const driveFile = await driveService.uploadFile(
             req.file.buffer,
-            `${cert_number}-${req.file.originalname}`,
+            req.file.originalname,
             req.file.mimetype
         );
 
         db.run(
-            `INSERT INTO certificates (cert_number, student_name, file_path, google_drive_id) VALUES (?, ?, ?, ?)`,
-            [cert_number, student_name, 'GOOGLE_DRIVE', driveFile.id],
+            `INSERT INTO certificates (cert_number, student_name, course, file_path, google_drive_id) VALUES (?, ?, ?, ?, ?)`,
+            [cert_number, student_name, course || null, 'GOOGLE_DRIVE', driveFile.id],
             function (err) {
                 if (err) {
                     if (err.message.includes('UNIQUE constraint failed')) {
@@ -106,7 +113,7 @@ app.post('/admin/upload', adminAuth, upload.single('certificate'), async (req, r
                     return res.status(500).json({ error: err.message });
                 }
                 res.json({
-                    message: 'Certificate uploaded successfully!',
+                    message: 'uploaded successful',
                     id: this.lastID,
                     drive_id: driveFile.id
                 });
@@ -122,17 +129,18 @@ app.post('/admin/upload', adminAuth, upload.single('certificate'), async (req, r
 app.get('/api/search/:certNumber', async (req, res) => {
     const certNumber = req.params.certNumber;
 
-    db.get(`SELECT * FROM certificates WHERE cert_number = ?`, [certNumber], async (err, row) => {
+    db.get(`SELECT * FROM certificates WHERE LOWER(cert_number) = LOWER(?) OR LOWER(course) = LOWER(?)`, [certNumber, certNumber], async (err, row) => {
         if (err) {
             console.error('DB Error:', err.message);
         }
 
         if (row) {
-            // Found in DB
+            // Found in DB (by cert number or course)
             return res.json({
                 id: row.id,
                 cert_number: row.cert_number,
                 student_name: row.student_name,
+                course: row.course,
                 download_url: `https://drive.google.com/uc?export=download&id=${row.google_drive_id}`
             });
         }

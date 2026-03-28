@@ -60,9 +60,10 @@ async function findFileByName(fileName) {
     const drive = await getDriveService();
     const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
     
-    // Search for a file with the given name (case insensitive or partial match can be adjusted)
-    // We search for files that start with the cert number
-    const q = `'${folderId}' in parents and name contains '${fileName}' and trashed = false`;
+    // Exact name match to prevent partial hits
+    // Escape single quotes in the fileName for query safety
+    const escapedFileName = fileName.replace(/'/g, "\\'");
+    const q = `'${folderId}' in parents and name = '${escapedFileName}' and trashed = false`;
     
     const response = await drive.files.list({
         q: q,
