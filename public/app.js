@@ -175,9 +175,26 @@ document.addEventListener('DOMContentLoaded', () => {
         resultBox.classList.remove('hidden');
     }
 
-    // ======== Admin Upload Form ========
+    // ======== Admin Upload Form & Preview ========
     const uploadForm = document.getElementById('uploadForm');
     const uploadResult = document.getElementById('uploadResult');
+    const certFileInput = document.getElementById('certificatePdf');
+    const adminPreviewContainer = document.getElementById('adminPreviewContainer');
+    const adminPreviewFrame = document.getElementById('adminPreviewFrame');
+    
+    // Admin Live Preview: Show file immediately after selection
+    if (certFileInput) {
+        certFileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file && file.type === 'application/pdf') {
+                const fileUrl = URL.createObjectURL(file);
+                adminPreviewFrame.src = fileUrl;
+                adminPreviewContainer.classList.remove('hidden');
+            } else {
+                adminPreviewContainer.classList.add('hidden');
+            }
+        });
+    }
 
     if (uploadForm) {
         uploadForm.addEventListener('submit', async (e) => {
@@ -209,6 +226,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 uploadResult.textContent = '✔ ' + data.message;
                 uploadResult.classList.add('success');
                 uploadForm.reset();
+                
+                // Hide preview after success
+                if (adminPreviewContainer) adminPreviewContainer.classList.add('hidden');
 
             } catch (err) {
                 console.error('Upload Error:', err);
