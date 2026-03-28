@@ -53,7 +53,7 @@ const adminAuth = (req, res, next) => {
 
 // Login Routes
 app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'login.html'));
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
 app.post('/login', (req, res) => {
