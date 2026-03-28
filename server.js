@@ -105,23 +105,33 @@ app.post('/admin/upload', adminAuth, upload.single('certificate'), async (req, r
             }
 
             // [UPLOAD] Now that both checks passed, upload the file
-            const driveFile = await driveService.uploadFile(
-                req.file.buffer,
-                req.file.originalname,
-                req.file.mimetype
-            );
+            let driveFile;
+            try {
+                driveFile = await driveService.uploadFile(
+                    req.file.buffer,
+                    req.file.originalname,
+                    req.file.mimetype
+                );
+            } catch (uploadError) {
+                return res.status(500).json({ error: 'Google Drive Upload Error: ' + uploadError.message });
+            }
 
             // [INSERT] Save to database
             db.run(
                 `INSERT INTO certificates (cert_number, student_name, course, file_path, google_drive_id) VALUES (?, ?, ?, ?, ?)`,
                 [cleanCertNumber, student_name, course || null, 'GOOGLE_DRIVE', driveFile.id],
-                function (err) {
-                    if (err) {
-                        if (err.message.includes('UNIQUE constraint failed')) {
+                async function (dbRunErr) {
+                    if (dbRunErr) {
+                        // [ROLLBACK] If DB fails, delete the file we just uploaded to Drive
+                        console.log('DB Insert Failed. Rolling back Google Drive upload...');
+                        await driveService.deleteFile(driveFile.id);
+                        
+                        if (dbRunErr.message.includes('UNIQUE constraint failed')) {
                             return res.status(400).json({ error: 'Certificate Number already exists in database.' });
                         }
-                        return res.status(500).json({ error: 'Database Error: ' + err.message });
+                        return res.status(500).json({ error: 'Database Error: ' + dbRunErr.message });
                     }
+
                     res.json({
                         message: 'uploaded successful',
                         id: this.lastID,

@@ -90,8 +90,24 @@ async function findFileByExactName(fileName) {
     return response.data.files[0] || null; // Return first match only
 }
 
+async function deleteFile(fileId) {
+    try {
+        const drive = await getDriveService();
+        await drive.files.delete({
+            fileId: fileId,
+            supportsAllDrives: true,
+        });
+        console.log(`Successfully deleted orphaned file from Google Drive: ${fileId}`);
+        return true;
+    } catch (error) {
+        console.error(`Failed to delete orphaned file from Google Drive: ${fileId}`, error.message);
+        return false;
+    }
+}
+
 module.exports = {
     uploadFile,
     findFilesByName,
     findFileByExactName,
+    deleteFile,
 };
