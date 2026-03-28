@@ -207,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.disabled = true;
             submitBtn.textContent = 'Uploading to Secure Drive...';
             uploadResult.innerHTML = '';
-            uploadResult.className = 'result-message';
+            uploadResult.className = 'alert';
 
             try {
                 const formData = new FormData(uploadForm);
@@ -220,11 +220,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(data.error || 'Upload failed');
+                    const message = data.error || 'Upload failed';
+                    uploadResult.innerHTML = `<div class="alert alert-danger">✖ ${message}</div>`;
+                    return;
                 }
 
-                uploadResult.textContent = '✔ ' + data.message;
-                uploadResult.classList.add('success');
+                uploadResult.innerHTML = `<div class="alert alert-success">✔ Upload successful</div>`;
                 uploadForm.reset();
                 
                 // Hide preview after success
@@ -232,8 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } catch (err) {
                 console.error('Upload Error:', err);
-                uploadResult.textContent = '✖ ' + err.message;
-                uploadResult.classList.add('error');
+                uploadResult.innerHTML = `<div class="alert alert-danger">✖ ${err.message}</div>`;
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = originalBtnText;
