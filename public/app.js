@@ -3,7 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ======== Configuration ========
     // IMPORTANT: Swap this with your Render.com URL after you deploy the backend!
     // Example: const API_URL = 'https://your-app.onrender.com';
-    const API_URL = window.location.origin === 'http://localhost:3000' ? '' : 'https://your-app-on-render.onrender.com';
+   const API_URL = 'https://your-app.onrender.com'; // Replace with your actual URL
+
     
     
     // ======== Admin Upload Form ========
