@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
 const path = require('path');
+const db = require('./database');
 const fs = require('fs');
 const driveService = require('./googleDriveService');
 require('dotenv').config();
@@ -13,7 +14,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors({
     origin: true, // Allows any origin that makes the request
     credentials: true // Required for cookies/headers across domains
-})); 
+}));
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));
 app.use(express.json());
@@ -22,7 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 // Setup multer for PDF uploads
 const dataDir = process.env.DATA_DIR || __dirname;
 const storage = multer.memoryStorage();
-const upload = multer({ 
+const upload = multer({
     storage: storage,
     limits: { fileSize: 8 * 1024 * 1024 }, // 8 MB limit
     fileFilter: (req, file, cb) => {
@@ -76,32 +77,32 @@ app.get('/admin', adminAuth, (req, res) => {
 // Admin Route: Upload a certificate
 app.post('/admin/upload', adminAuth, upload.single('certificate'), async (req, res) => {
     const { cert_number, student_name } = req.body;
-    
+
     if (!req.file || !cert_number) {
         return res.status(400).json({ error: 'Certificate file and number are required.' });
     }
 
     try {
         const driveFile = await driveService.uploadFile(
-            req.file.buffer, 
-            `${cert_number}-${req.file.originalname}`, 
+            req.file.buffer,
+            `${cert_number}-${req.file.originalname}`,
             req.file.mimetype
         );
 
         db.run(
             `INSERT INTO certificates (cert_number, student_name, google_drive_id) VALUES (?, ?, ?)`,
             [cert_number, student_name, driveFile.id],
-            function(err) {
+            function (err) {
                 if (err) {
-                    if(err.message.includes('UNIQUE constraint failed')) {
-                         return res.status(400).json({ error: 'Certificate number already exists.'});
+                    if (err.message.includes('UNIQUE constraint failed')) {
+                        return res.status(400).json({ error: 'Certificate number already exists.' });
                     }
                     return res.status(500).json({ error: err.message });
                 }
-                res.json({ 
-                    message: 'Certificate uploaded successfully!', 
+                res.json({
+                    message: 'Certificate uploaded successfully!',
                     id: this.lastID,
-                    drive_id: driveFile.id 
+                    drive_id: driveFile.id
                 });
             }
         );
