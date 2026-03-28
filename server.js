@@ -89,39 +89,45 @@ app.post('/admin/upload', adminAuth, upload.single('certificate'), async (req, r
     }
 
     try {
-        // [DUPLICATE CHECK] Check if a file with the same EXACT name already exists on Google Drive
-        const existingFile = await driveService.findFileByExactName(req.file.originalname);
-        if (existingFile) {
-            return res.status(400).json({ error: 'PDF already exists' });
-        }
-
-        // [UPLOAD] Upload the file using its original name
-        const driveFile = await driveService.uploadFile(
-            req.file.buffer,
-            req.file.originalname,
-            req.file.mimetype
-        );
-
-        db.run(
-            `INSERT INTO certificates (cert_number, student_name, course, file_path, google_drive_id) VALUES (?, ?, ?, ?, ?)`,
-            [cert_number, student_name, course || null, 'GOOGLE_DRIVE', driveFile.id],
-            function (err) {
-                if (err) {
-                    if (err.message.includes('UNIQUE constraint failed')) {
-                        return res.status(400).json({ error: 'Certificate number already exists.' });
-                    }
-                    return res.status(500).json({ error: err.message });
-                }
-                res.json({
-                    message: 'uploaded successful',
-                    id: this.lastID,
-                    drive_id: driveFile.id
-                });
+        // [CHECK 1] Check if certificate number already exists in DB
+        db.get(`SELECT id FROM certificates WHERE cert_number = ?`, [cert_number], async (dbErr, row) => {
+            if (dbErr) return res.status(500).json({ error: dbErr.message });
+            if (row) {
+                return res.status(400).json({ error: 'Certificate Number already exists in database.' });
             }
-        );
+
+            // [CHECK 2] Check if PDF with same name exists on Google Drive
+            const existingFile = await driveService.findFileByExactName(req.file.originalname);
+            if (existingFile) {
+                return res.status(400).json({ error: 'PDF filename already exists on Google Drive.' });
+            }
+
+            // [UPLOAD] Now that both checks passed, upload the file
+            const driveFile = await driveService.uploadFile(
+                req.file.buffer,
+                req.file.originalname,
+                req.file.mimetype
+            );
+
+            // [INSERT] Save to database
+            db.run(
+                `INSERT INTO certificates (cert_number, student_name, course, file_path, google_drive_id) VALUES (?, ?, ?, ?, ?)`,
+                [cert_number, student_name, course || null, 'GOOGLE_DRIVE', driveFile.id],
+                function (err) {
+                    if (err) {
+                        return res.status(500).json({ error: 'DB Insert Error: ' + err.message });
+                    }
+                    res.json({
+                        message: 'uploaded successful',
+                        id: this.lastID,
+                        drive_id: driveFile.id
+                    });
+                }
+            );
+        });
     } catch (error) {
-        console.error('Upload Error:', error);
-        res.status(500).json({ error: 'Failed to upload to Google Drive: ' + error.message });
+        console.error('Upload Process Error:', error);
+        res.status(500).json({ error: 'Failed to complete upload process: ' + error.message });
     }
 });
 
