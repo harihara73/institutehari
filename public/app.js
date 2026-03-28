@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         driveId = data.download_url.split('id=')[1];
                     }
 
-                    const previewUrl = driveId ? `https://drive.google.com/file/d/${driveId}/preview` : (data.download_url || '#');
+                    const previewUrl = data.preview_url || (driveId ? `https://drive.google.com/file/d/${driveId}/preview` : (data.download_url || '#'));
                     
                     const card = document.createElement('div');
                     card.className = 'mb-5'; // Space between multiple results
