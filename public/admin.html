@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Certificate | Admin</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <h2>Admin Portal</h2>
+            </div>
+            <nav>
+                <a href="index.html">Search Certificate</a>
+                <a id="logoutBtn" href="#" style="margin-left: 15px;">Logout</a>
+                <script>
+                    document.getElementById('logoutBtn').addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const API_URL = 'https://institutehari.onrender.com'; // User needs to update this
+                        window.location.href = `${API_URL}/logout`;
+                    });
+                </script>
+            </nav>
+        </header>
+
+        <main class="main-content">
+            <div class="card glass-card">
+                <h1>Upload New Certificate</h1>
+                <p class="subtitle">Assign a unique certificate number to a student's PDF.</p>
+
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="certNumber">Certificate Number *</label>
+                        <input type="text" id="certNumber" name="cert_number" required placeholder="e.g. CERT-2023-001">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="studentName">Student Name (Optional)</label>
+                        <input type="text" id="studentName" name="student_name" placeholder="John Doe">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="certificatePdf">Attach PDF *</label>
+                        <input type="file" id="certificatePdf" name="certificate" accept=".pdf" required>
+                    </div>
+
+                    <button type="submit" class="primary-btn">Upload Certificate</button>
+                    <div id="uploadResult" class="result-message"></div>
+                </form>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+    <script>
+        // Force logout on page refresh to satisfy user requirement
+        const navEntries = performance.getEntriesByType("navigation");
+        if (navEntries.length > 0 && navEntries[0].type === "reload") {
+            document.cookie = "adminAuth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            window.location.href = "/login";
+        }
+    </script>
+</body>
+
+</html>
