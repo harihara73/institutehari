@@ -88,11 +88,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 dataArray.forEach(data => {
                     // Render success details using the Premium Layout
                     let driveId = '';
-                    if (data.download_url.includes('id=')) {
+                    if (data.download_url && data.download_url.includes('id=')) {
                         driveId = data.download_url.split('id=')[1];
                     }
 
-                    const previewUrl = driveId ? `https://drive.google.com/file/d/${driveId}/preview` : data.download_url;
+                    const previewUrl = driveId ? `https://drive.google.com/file/d/${driveId}/preview` : (data.download_url || '#');
                     
                     const card = document.createElement('div');
                     card.className = 'mb-5'; // Space between multiple results
