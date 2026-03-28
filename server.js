@@ -10,7 +10,10 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors()); // In production, you might want to restrict this to your Hostinger domain
+app.use(cors({
+    origin: true, // Allows any origin that makes the request
+    credentials: true // Required for cookies/headers across domains
+})); 
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));
 app.use(express.json());
@@ -48,18 +51,21 @@ app.get('/login', (req, res) => {
 
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
+    const redirectUrl = process.env.REDIRECT_URL || '';
     if (username === 'admin' && password === 'admin123') {
-        res.setHeader('Set-Cookie', 'adminAuth=true; Path=/; HttpOnly');
-        res.redirect('/admin');
+        // Set cookie with SameSite=None and Secure for cross-domain support
+        res.setHeader('Set-Cookie', 'adminAuth=true; Path=/; HttpOnly; SameSite=None; Secure');
+        res.redirect(`${redirectUrl}/admin.html`);
     } else {
-        res.redirect('/login?error=1');
+        res.redirect(`${redirectUrl}/login.html?error=1`);
     }
 });
 
 // Logout Route
 app.get('/logout', (req, res) => {
-    res.setHeader('Set-Cookie', 'adminAuth=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT');
-    res.redirect('/admin');
+    const redirectUrl = process.env.REDIRECT_URL || '';
+    res.setHeader('Set-Cookie', 'adminAuth=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=None; Secure');
+    res.redirect(`${redirectUrl}/index.html`);
 });
 
 // Protected Admin UI Route
