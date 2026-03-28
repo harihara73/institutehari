@@ -12,9 +12,15 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors({
-    origin: true, // Allows any origin that makes the request
-    credentials: true // Required for cookies/headers across domains
+    origin: true,
+    credentials: true
 }));
+
+// Root / Health Check (Important for Render stability)
+app.get('/', (req, res) => {
+    res.status(200).send('Certificate System Backend is Running');
+});
+
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));
 app.use(express.json());
