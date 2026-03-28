@@ -1,66 +1,366 @@
-<!DOCTYPE html>
-<html lang="en">
+/* Root Theme Variables - Matches Visual Institution Brand */
+:root {
+    --bs-primary: #f16334;    /* Main Orange */
+    --bs-secondary: #1f7b8c;  /* Dark Teal */
+    --bs-light: #f4f7fc;
+    --bs-dark: #0b2b3b;
+    --bs-white: #ffffff;
+}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login</title>
-    <link rel="stylesheet" href="/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-</head>
+/*** Spinner Start ***/
+/*** Spinner ***/
+#spinner {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .5s ease-out, visibility 0s linear .5s;
+    z-index: 99999;
+}
 
-<body>
-    <div class="container">
-        <header>
-            <div class="logo">
-                <h2>Admin Login</h2>
-            </div>
-            <nav>
-                <a href="/">Back to Search</a>
-            </nav>
-        </header>
+#spinner.show {
+    transition: opacity .5s ease-out, visibility 0s linear 0s;
+    visibility: visible;
+    opacity: 1;
+}
+/*** Spinner End ***/
 
-        <main class="main-content">
-            <div class="card glass-card">
-                <h1>Secure Access</h1>
-                <p class="subtitle">Please enter your admin credentials to continue.</p>
+.back-to-top {
+    position: fixed;
+    right: 30px;
+    bottom: 30px;
+    transition: 0.5s;
+    z-index: 99;
+}
 
-                <form id="loginForm" method="POST">
-                    <script>
-                        // Inject API URL into form action
-                        document.addEventListener('DOMContentLoaded', () => {
-                            const API_URL = 'https://institutehari.onrender.com'; // This should be updated by the user
-                            document.getElementById('loginForm').action = `${API_URL}/login`;
-                        });
-                    </script>
-                    <div class="form-group">
-                        <label for="username">Username</label>
-                        <input type="text" id="username" name="username" required>
-                    </div>
+/*** Button Start ***/
+.btn {
+    font-weight: 600;
+    transition: .5s;
+}
 
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" name="password" required>
-                    </div>
+.btn-square {
+    width: 32px;
+    height: 32px;
+}
 
-                    <button type="submit" class="primary-btn">Login</button>
+.btn-sm-square {
+    width: 34px;
+    height: 34px;
+}
 
-                    <div id="loginError" class="result-message error" style="display: none; margin-top: 15px;">
-                        Invalid credentials. Please try again.
-                    </div>
-                </form>
-            </div>
-        </main>
+.btn-md-square {
+    width: 44px;
+    height: 44px;
+}
 
-        <div class="decoration circle-1"></div>
-        <div class="decoration circle-2"></div>
-    </div>
-    <script>
-        // Show error if URL has ?error=1
-        if (window.location.search.includes('error=1')) {
-            document.getElementById('loginError').style.display = 'block';
-        }
-    </script>
-</body>
+.btn-lg-square {
+    width: 56px;
+    height: 56px;
+}
 
-</html>
+.btn-square,
+.btn-sm-square,
+.btn-md-square,
+.btn-lg-square {
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: normal;
+    border-radius: 50%;
+}
+
+.btn.btn-primary {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    box-shadow: inset 0 0 0 0 var(--bs-primary);
+}
+
+.btn.btn-primary:hover {
+    box-shadow: inset 300px 0 0 0 var(--bs-light) !important;
+    color: var(--bs-primary) !important;
+}
+
+.btn.btn-secondary {
+    background-color: var(--bs-secondary);
+    border-color: var(--bs-secondary);
+    box-shadow: inset 0 0 0 0 var(--bs-primary);
+}
+
+.btn.btn-secondary:hover {
+    box-shadow: inset 300px 0 0 0 var(--bs-primary);
+    color: var(--bs-light) !important;
+}
+
+.btn-hover {
+    transition: 0.5s;
+}
+
+.btn-hover:hover {
+    color: var(--bs-secondary) !important;
+}
+
+/*** Sub Title Start ***/
+.sub-title {
+    position: relative;
+    display: inline-block;
+    text-transform: uppercase;
+    color: var(--bs-primary);
+}
+
+.sub-title::before {
+    content: "";
+    width: 100px;
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    margin-right: -110px;
+    border: 1px solid var(--bs-secondary) !important;
+}
+
+/*** Topbar Start ***/
+.fixed-top .container {
+    transition: 0.5s;
+}
+
+.topbar {
+    padding: 2px 10px 2px 20px;
+    background: var(--bs-primary) !important;
+}
+
+.topbar a,
+.topbar a i {
+    transition: 0.5s;
+    color: white;
+    text-decoration: none;
+}
+
+.topbar a:hover,
+.topbar a i:hover {
+    color: var(--bs-secondary) !important;
+}
+
+
+@media (max-width: 576px) {
+    .topbar {
+        display: none;    
+    }
+}
+/*** Topbar End ***/
+
+
+/*** Navbar ***/
+.navbar-light .navbar-nav .nav-link {
+    font-family: 'Inter', sans-serif;
+    position: relative;
+    margin-right: 25px;
+    padding: 20px 0; /* Reduced from 35px to fix overlap */
+    color: var(--bs-dark) !important;
+    font-size: 18px;
+    font-weight: 500;
+    outline: none;
+    transition: .5s;
+}
+
+.sticky-top.navbar-light .navbar-nav .nav-link {
+    padding: 15px 0;
+    color: var(--bs-dark) !important;
+}
+
+.navbar-light .navbar-nav .nav-link:hover,
+.navbar-light .navbar-nav .nav-link.active {
+    color: var(--bs-primary) !important;
+}
+
+.navbar .dropdown-toggle::after {
+    border: none;
+    content: "\f107";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 600;
+    vertical-align: middle;
+    margin-left: 8px;
+}
+
+@media (min-width: 1200px) {
+    .navbar .nav-item .dropdown-menu {
+        display: block;
+        visibility: hidden;
+        top: 100%;
+        transform: rotateX(-75deg);
+        transform-origin: 0% 0%;
+        border: 0;
+        border-radius: 10px;
+        transition: .5s;
+        opacity: 0;
+    }
+}
+
+.dropdown .dropdown-menu a:hover {
+    background: var(--bs-primary);
+    color: var(--bs-white);
+}
+
+.navbar .nav-item:hover .dropdown-menu {
+    transform: rotateX(0deg);
+    visibility: visible;
+    background: var(--bs-light) !important;
+    transition: .5s;
+    opacity: 1;
+}
+
+@media (max-width: 991.98px) {
+    .navbar.navbar-expand-lg .navbar-toggler {
+        padding: 10px 20px;
+        border: 1px solid var(--bs-primary);
+        color: var(--bs-primary);
+    }
+
+    .navbar-light .navbar-collapse {
+        margin-top: 15px;
+        border-top: 1px solid #DDDDDD;
+        background: white;
+        padding: 10px;
+    }
+
+    .navbar-light .navbar-nav .nav-link {
+        padding: 10px 0;
+        margin-left: 0;
+    }
+}
+
+@media (min-width: 992px) {
+    .navbar-light {
+        position: relative; /* Changed from absolute to relative to prevent overlap */
+        width: 100%;
+        top: 0;
+        left: 0;
+        border-bottom: 1px solid rgba(0, 0, 0, .05);
+        z-index: 999;
+    }
+    
+    .sticky-top.navbar-light {
+        position: fixed;
+        top: 0;
+        background: var(--bs-light) !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+}
+
+/*** Search Result Specific Styles ***/
+.result-card {
+    background: white;
+    border-radius: 1.8rem;
+    box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1);
+    margin-top: 2rem;
+    padding: 2rem;
+    transition: all 0.3s;
+}
+
+.success-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #dcfce7;
+    color: #15803d;
+    padding: 0.5rem 1.2rem;
+    border-radius: 40px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+.student-profile {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin: 1.5rem 0;
+}
+
+.student-photo {
+    width: 150px;
+    height: 150px;
+    background: #eef2ff;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--bs-secondary);
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+    flex: 1;
+}
+
+.detail-item {
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: 1rem;
+    border: 1px solid #e2edf2;
+}
+
+.detail-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #4a6a7a;
+    margin-bottom: 4px;
+}
+
+.detail-value {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--bs-dark);
+}
+
+.qr-section {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    border-top: 1px solid #e2edf2;
+    padding-top: 2rem;
+}
+
+.preview-box {
+    margin-top: 2rem;
+    border-radius: 1rem;
+    overflow: hidden;
+    border: 1px solid #e2edf2;
+}
+
+.preview-header {
+    background: #f8fafc;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+}
+
+/* Footer styling to ensure data is visible */
+.footer {
+    background: var(--bs-dark);
+    color: #ffffff;
+}
+.footer a,
+.footer p,
+.footer h4,
+.footer .btn-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+.footer .btn-link:hover,
+.footer a:hover {
+    color: #f16334 !important;
+}
+
+/* Primary button hover keeps strong contrast for Google Drive upload button */
+.btn.btn-primary:hover,
+.btn-primary:focus {
+    background-color: #d85226 !important;
+    border-color: #d85226 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 12px rgba(241, 99, 52, 0.4) !important;
+}
