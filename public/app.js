@@ -92,10 +92,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                     <div class="detail-value">${data.student_name || 'Verified Student'}</div>
                                 </div>
                                 <div class="detail-item">
-                                    <div class="detail-label"><i class="fas fa-graduation-cap me-1"></i> Course / Program</div>
-                                    <div class="detail-value">Professional Computer Training</div>
-                                </div>
-                                <div class="detail-item">
                                     <div class="detail-label"><i class="fas fa-id-card me-1"></i> Certificate ID</div>
                                     <div class="detail-value">${data.cert_number}</div>
                                 </div>
@@ -106,22 +102,13 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>
 
-                        <div class="qr-section">
-                            <div class="d-flex align-items-center gap-3">
-                                <div id="qrCodeDynamic" style="background: white; padding: 5px; border-radius: 8px;"></div>
-                                <div>
-                                    <div style="font-weight: 700; color: var(--bs-dark);">Digital Verification QR</div>
-                                    <div style="font-size: 0.8rem; color: #64748b;">Scan to verify on mobile</div>
-                                </div>
-                            </div>
-                            <div class="action-buttons d-flex gap-2">
-                                <a href="${data.download_url}" class="btn btn-primary rounded-pill px-4">
-                                   <i class="fas fa-download me-2"></i>Download PDF
-                                </a>
-                                <button onclick="window.open('${previewUrl}', '_blank')" class="btn btn-secondary rounded-pill px-4">
-                                   <i class="fas fa-eye me-2"></i>Preview
-                                </button>
-                            </div>
+                        <div class="action-buttons d-flex flex-wrap gap-2 mb-4">
+                            <a href="${data.download_url}" class="btn btn-primary rounded-pill px-4">
+                               <i class="fas fa-download me-2"></i>Download PDF
+                            </a>
+                            <button onclick="window.open('${previewUrl}', '_blank')" class="btn btn-secondary rounded-pill px-4">
+                               <i class="fas fa-eye me-2"></i>Preview
+                            </button>
                         </div>
 
                         <!-- PDF Preview Frame -->
@@ -135,18 +122,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
 
                 resultBox.classList.remove('hidden');
-
-                // Generate QR Code
-                const qrContainer = document.getElementById("qrCodeDynamic");
-                if (qrContainer && typeof QRCode !== 'undefined') {
-                    new QRCode(qrContainer, {
-                        text: `VERIFIED: ${data.cert_number} | ${data.student_name}`,
-                        width: 90,
-                        height: 90,
-                        colorDark: "#0b2b3b",
-                        colorLight: "#ffffff"
-                    });
-                }
 
             } catch (err) {
                 showError(err.message);

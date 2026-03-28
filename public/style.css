@@ -340,6 +340,13 @@
     font-weight: 700;
 }
 
+/* Backend status spacing (fixed header + status bar) */
+#backendStatus {
+    margin-top: 175px; /* ensures status bar is clearly below fixed header */
+    position: relative;
+    z-index: 50;
+}
+
 /* Footer styling to ensure data is visible */
 .footer {
     background: var(--bs-dark);
