@@ -90,8 +90,8 @@ app.post('/admin/upload', adminAuth, upload.single('certificate'), async (req, r
         );
 
         db.run(
-            `INSERT INTO certificates (cert_number, student_name, google_drive_id) VALUES (?, ?, ?)`,
-            [cert_number, student_name, driveFile.id],
+            `INSERT INTO certificates (cert_number, student_name, file_path, google_drive_id) VALUES (?, ?, ?, ?)`,
+            [cert_number, student_name, 'GOOGLE_DRIVE', driveFile.id],
             function (err) {
                 if (err) {
                     if (err.message.includes('UNIQUE constraint failed')) {
