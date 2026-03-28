@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify & Download Certificate</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <h2>Visual Institution Verifier</h2>
+            </div>
+            <nav>
+                <a href="login.html">Admin</a>
+            </nav>
+        </header>
+
+        <main class="main-content">
+            <div class="card glass-card">
+                <h1>Verify Student Certification</h1>
+                <p class="subtitle">Enter your certificate ID below to validate and download your certification
+                    document.</p>
+
+                <form id="searchForm">
+                    <div class="search-box">
+                        <input type="text" id="searchCertNumber" required
+                            placeholder="Enter Certificate No. (e.g. CERT-2023-001)">
+                        <button type="submit" class="primary-btn search-btn">Verify</button>
+                    </div>
+                </form>
+
+                <div id="searchResult" class="result-box hidden">
+                    <!-- Results will be injected here via app.js -->
+                </div>
+            </div>
+        </main>
+
+        <div class="decoration circle-1"></div>
+        <div class="decoration circle-2"></div>
+    </div>
+    <script src="app.js"></script>
+</body>
+
+</html>
